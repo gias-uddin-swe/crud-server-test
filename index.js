@@ -30,10 +30,23 @@ client.connect((err) => {
     });
   });
 
-  app.get("/users", (req, res) => {
-    userList.find({}).toArray((err, documents) => {
-      res.send(documents);
-    });
+  //   app.get("/users", (req, res) => {
+  //     userList.find({}).toArray((err, documents) => {
+  //       res.send(documents);
+  //     });
+  //   });
+
+  app.get("/users", async (req, res) => {
+    const result = await userList.find({}).toArray();
+    res.send(result);
+  });
+
+  app.delete("/deleteUser/:id", async (req, res) => {
+    console.log(req.params.id);
+    const result = await userList.deleteOne({ _id: ObjectId(req.params.id) });
+
+    console.log(result.acknowledged);
+    res.send(result.acknowledged);
   });
 
   app.get("/singleUser/:id", (req, res) => {
@@ -41,6 +54,21 @@ client.connect((err) => {
     userList.findOne({ _id: ObjectId(req.params.id) }).then((result) => {
       res.send(result);
     });
+  });
+
+  //uodate user info
+  app.put("/update/:id", async (req, res) => {
+    const id = req.params.id;
+    const updatedName = req.body;
+    const filter = { _id: ObjectId(id) };
+    const updateInfo = {
+      $set: {
+        name: updatedName.name,
+      },
+    };
+    const result = await userList.updateOne(filter, updateInfo);
+    console.log(result);
+    res.send(result);
   });
 });
 
